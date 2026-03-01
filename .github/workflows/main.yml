@@ -1,0 +1,58 @@
+# 1. Create a local workspace
+mkdir -p ~/TGLA_Workspace && cd ~/TGLA_Workspace
+
+# 2. Initialize the repository
+git init
+git remote add origin https://github.com/alextgl-max/TGLA_Core.git
+
+# 3. Create the structure (Spine, Brain, Heartbeat)
+mkdir -p backend data .github/workflows ledger docs
+
+# 4. Pull the files from your OneDrive (I've prepared the content for you here)
+cat <<EOF > backend/main.py
+from fastapi import FastAPI
+import pandas as pd
+import os
+
+app = FastAPI(title="TGLA_Core_Spine")
+DATA_PATH = "data/scale_log.csv"
+
+@app.get("/")
+def read_root():
+    return {"status": "online", "version": "0.1.0", "entity": "TGLA_Core_Spine"}
+
+@app.get("/state/latest")
+def get_latest_state():
+    if not os.path.exists(DATA_PATH):
+        return {"error": "Data file not found"}
+    df = pd.read_csv(DATA_PATH)
+    if df.empty: return {"error": "Data file is empty"}
+    latest = df.iloc[-1].to_dict()
+    return latest
+EOF
+
+cat <<EOF > .github/workflows/heartbeat.yml
+name: TGLA_Core_Heartbeat
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+jobs:
+  process_data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Run Logic
+        run: |
+          pip install pandas
+          python backend/main.py
+EOF
+
+# 5. Finalize and Push to the New Body
+git add .
+git commit -m "Initial Clone: Spine, Brain, and Heartbeat"
+git branch -M main
+git push -u origin main
