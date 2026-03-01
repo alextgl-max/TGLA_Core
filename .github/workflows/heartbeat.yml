@@ -1,1 +1,25 @@
 
+name: TGLA_Core_Heartbeat
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:      # Allows you to trigger it manually
+
+jobs:
+  recalibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DNA
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Run Brain Logic
+        run: |
+          echo "Heartbeat Active: Recalibrating TGLA State..."
+          # This is where the Python logic will execute once we move the main.py over
+          echo "Status: Online"
